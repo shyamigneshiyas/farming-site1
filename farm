@@ -1,0 +1,466 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  Home, 
+  Cloud, 
+  Leaf, 
+  Camera, 
+  TrendingUp, 
+  Mic, 
+  MicOff,
+  Send,
+  User,
+  MapPin,
+  ThermometerSun,
+  Droplets,
+  Wind,
+  AlertTriangle,
+  CheckCircle,
+  Calendar,
+  DollarSign,
+  Book,
+  Settings,
+  Menu,
+  X
+} from 'lucide-react';
+
+const KrishiMitra = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [isListening, setIsListening] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    {
+      type: 'bot',
+      message: 'Hello! I am KrishiMitra, your AI agricultural advisor. I can help you with crop advice, weather updates, soil health, pest control, and market prices. How can I assist you today?',
+      timestamp: new Date().toLocaleTimeString()
+    }
+  ]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('hindi');
+  const [userLocation, setUserLocation] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedCrop, setSelectedCrop] = useState('Rice');
+  const fileInputRef = useRef(null);
+
+  // Mock weather data
+  const weatherData = {
+    temperature: 28,
+    humidity: 72,
+    windSpeed: 12,
+    rainfall: 5.2,
+    condition: 'Partly Cloudy'
+  };
+
+  // Mock crop data
+  const crops = ['Rice', 'Wheat', 'Corn', 'Soybean', 'Cotton', 'Sugarcane'];
+  
+  // Mock market prices
+  const marketPrices = [
+    { crop: 'Rice', price: '2,150', change: '+50', trend: 'up' },
+    { crop: 'Wheat', price: '2,400', change: '-30', trend: 'down' },
+    { crop: 'Corn', price: '1,850', change: '+75', trend: 'up' },
+    { crop: 'Soybean', price: '4,200', change: '+120', trend: 'up' }
+  ];
+
+  // Simulated AI responses
+  const getAIResponse = (message) => {
+    const responses = {
+      'weather': 'Current weather conditions are favorable for farming. Temperature is 28°C with 72% humidity. Light rainfall is expected in the next 3 days, which is good for your crops.',
+      'rice': 'For rice cultivation, maintain water levels in your fields. Use NPK fertilizer in 10:26:26 ratio. Monitor for pest attacks, especially stem borers.',
+      'pest': 'For pest control, I recommend using neem oil spray first. Avoid excessive use of chemical pesticides. Try integrated pest management techniques.',
+      'fertilizer': 'Based on soil testing, use organic fertilizers. Compost and farm yard manure are excellent choices. For chemical fertilizers, follow soil test recommendations.',
+      'wheat': 'Wheat requires well-drained soil. Apply phosphorus during sowing and nitrogen in split doses. Monitor for rust diseases.',
+      'market': 'Current market prices are showing good trends for most crops. Rice is at ₹2,150 per quintal with upward trend.',
+      'soil': 'Maintain soil health through crop rotation, organic matter addition, and proper drainage. Get soil tested every 2-3 years.',
+      default: 'I understand your concern. Could you please provide more details? You can ask about weather, crops, pests, fertilizers, market prices, or soil management.'
+    };
+
+    const lowerMessage = message.toLowerCase();
+    for (const [key, response] of Object.entries(responses)) {
+      if (lowerMessage.includes(key) && key !== 'default') {
+        return response;
+      }
+    }
+    return responses.default;
+  };
+
+  const handleSendMessage = () => {
+    if (inputMessage.trim()) {
+      const userMessage = {
+        type: 'user',
+        message: inputMessage,
+        timestamp: new Date().toLocaleTimeString()
+      };
+      
+      setChatMessages(prev => [...prev, userMessage]);
+      
+      // Simulate AI response
+      setTimeout(() => {
+        const botResponse = {
+          type: 'bot',
+          message: getAIResponse(inputMessage),
+          timestamp: new Date().toLocaleTimeString()
+        };
+        setChatMessages(prev => [...prev, botResponse]);
+      }, 1000);
+      
+      setInputMessage('');
+    }
+  };
+
+  const handleVoiceToggle = () => {
+    setIsListening(!isListening);
+    // Voice recognition would be implemented here
+  };
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const message = {
+        type: 'user',
+        message: 'Crop image uploaded for analysis',
+        image: URL.createObjectURL(file),
+        timestamp: new Date().toLocaleTimeString()
+      };
+      setChatMessages(prev => [...prev, message]);
+      
+      setTimeout(() => {
+        const botResponse = {
+          type: 'bot',
+          message: 'Image analysis complete! This appears to be a healthy rice crop. No signs of disease or pest damage detected. The crop looks well-maintained with good growth.',
+          timestamp: new Date().toLocaleTimeString()
+        };
+        setChatMessages(prev => [...prev, botResponse]);
+      }, 2000);
+    }
+  };
+
+  useEffect(() => {
+    // Get user location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setUserLocation('Madhya Pradesh, India');
+      });
+    }
+  }, []);
+
+  const renderDashboard = () => (
+    <div className="space-y-6">
+      <div className="bg-gradient-to-r from-green-500 to-blue-500 rounded-lg p-6 text-white">
+        <h2 className="text-2xl font-bold mb-2">Today's Weather</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="flex items-center space-x-2">
+            <ThermometerSun className="h-6 w-6" />
+            <span>{weatherData.temperature}°C</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Droplets className="h-6 w-6" />
+            <span>{weatherData.humidity}%</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Wind className="h-6 w-6" />
+            <span>{weatherData.windSpeed} km/h</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Cloud className="h-6 w-6" />
+            <span>{weatherData.condition}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg p-6 shadow-lg">
+          <h3 className="text-xl font-semibold mb-4 text-gray-800">Today's Recommendations</h3>
+          <div className="space-y-3">
+            <div className="flex items-start space-x-3">
+              <CheckCircle className="h-5 w-5 text-green-500 mt-1" />
+              <span className="text-gray-700">Maintain water level in rice fields</span>
+            </div>
+            <div className="flex items-start space-x-3">
+              <AlertTriangle className="h-5 w-5 text-yellow-500 mt-1" />
+              <span className="text-gray-700">Monitor crops for pest activity</span>
+            </div>
+            <div className="flex items-start space-x-3">
+              <Calendar className="h-5 w-5 text-blue-500 mt-1" />
+              <span className="text-gray-700">Apply fertilizer next week</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg p-6 shadow-lg">
+          <h3 className="text-xl font-semibold mb-4 text-gray-800">Market Prices</h3>
+          <div className="space-y-3">
+            {marketPrices.slice(0, 3).map((item, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <span className="text-gray-700">{item.crop}</span>
+                <div className="flex items-center space-x-2">
+                  <span className="font-semibold">₹{item.price}</span>
+                  <span className={`text-sm ${item.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+                    {item.change}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderChat = () => (
+    <div className="bg-white rounded-lg shadow-lg h-96 flex flex-col">
+      <div className="p-4 border-b">
+        <h3 className="text-xl font-semibold text-gray-800">Agricultural Advisor</h3>
+      </div>
+      
+      <div className="flex-1 p-4 overflow-y-auto space-y-4">
+        {chatMessages.map((msg, index) => (
+          <div key={index} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+              msg.type === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'
+            }`}>
+              {msg.image && (
+                <img src={msg.image} alt="Uploaded" className="w-full h-32 object-cover rounded mb-2" />
+              )}
+              <p className="text-sm">{msg.message}</p>
+              <span className="text-xs opacity-75 block mt-1">{msg.timestamp}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="p-4 border-t">
+        <div className="flex space-x-2">
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="p-2 text-gray-500 hover:text-gray-700"
+          >
+            <Camera className="h-5 w-5" />
+          </button>
+          <button
+            onClick={handleVoiceToggle}
+            className={`p-2 ${isListening ? 'text-red-500' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+          </button>
+          <input
+            type="text"
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            placeholder="Type your question here..."
+            className="flex-1 p-2 border rounded-lg focus:outline-none focus:border-blue-500"
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+          />
+          <button
+            onClick={handleSendMessage}
+            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            <Send className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderMarketPrices = () => (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <h3 className="text-xl font-semibold mb-4 text-gray-800">Today's Market Prices</h3>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b">
+              <th className="text-left py-2">Crop</th>
+              <th className="text-right py-2">Price (₹/Quintal)</th>
+              <th className="text-right py-2">Change</th>
+              <th className="text-center py-2">Trend</th>
+            </tr>
+          </thead>
+          <tbody>
+            {marketPrices.map((item, index) => (
+              <tr key={index} className="border-b">
+                <td className="py-3 font-medium">{item.crop}</td>
+                <td className="text-right py-3">₹{item.price}</td>
+                <td className={`text-right py-3 ${item.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+                  {item.change}
+                </td>
+                <td className="text-center py-3">
+                  <TrendingUp className={`h-4 w-4 mx-auto ${
+                    item.trend === 'up' ? 'text-green-500' : 'text-red-500 transform rotate-180'
+                  }`} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const renderCropAdvisory = () => (
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">Select Crop</h3>
+        <select 
+          value={selectedCrop}
+          onChange={(e) => setSelectedCrop(e.target.value)}
+          className="w-full p-3 border rounded-lg focus:outline-none focus:border-blue-500"
+        >
+          {crops.map((crop, index) => (
+            <option key={index} value={crop}>{crop}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h3 className="text-xl font-semibold mb-4 text-gray-800">{selectedCrop} Care Guide</h3>
+        <div className="space-y-4">
+          <div className="border-l-4 border-green-500 pl-4">
+            <h4 className="font-semibold text-green-700">Irrigation</h4>
+            <p className="text-gray-600">Water regularly at proper intervals. Maintain adequate soil moisture.</p>
+          </div>
+          <div className="border-l-4 border-blue-500 pl-4">
+            <h4 className="font-semibold text-blue-700">Fertilizer</h4>
+            <p className="text-gray-600">Use organic fertilizers. Maintain NPK ratio of 10:26:26 for optimal growth.</p>
+          </div>
+          <div className="border-l-4 border-yellow-500 pl-4">
+            <h4 className="font-semibold text-yellow-700">Pest Control</h4>
+            <p className="text-gray-600">Use neem oil and organic pesticides. Implement integrated pest management.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const Sidebar = () => (
+    <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${
+      sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+    } transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
+      <div className="flex items-center justify-between h-16 px-4 border-b">
+        <h1 className="text-xl font-bold text-green-600">KrishiMitra</h1>
+        <button 
+          onClick={() => setSidebarOpen(false)}
+          className="lg:hidden"
+        >
+          <X className="h-6 w-6" />
+        </button>
+      </div>
+      
+      <nav className="mt-4">
+        <div className="px-4 py-2">
+          <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+            <MapPin className="h-4 w-4" />
+            <span>{userLocation || 'Loading location...'}</span>
+          </div>
+        </div>
+        
+        {[
+          { id: 'dashboard', icon: Home, label: 'Dashboard' },
+          { id: 'chat', icon: Mic, label: 'AI Advisor' },
+          { id: 'crop', icon: Leaf, label: 'Crop Guide' },
+          { id: 'market', icon: TrendingUp, label: 'Market Prices' },
+          { id: 'weather', icon: Cloud, label: 'Weather' },
+        ].map((item) => (
+          <button
+            key={item.id}
+            onClick={() => {setActiveTab(item.id); setSidebarOpen(false);}}
+            className={`w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-100 ${
+              activeTab === item.id ? 'bg-green-50 border-r-2 border-green-500' : ''
+            }`}
+          >
+            <item.icon className="h-5 w-5" />
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </nav>
+      
+      <div className="absolute bottom-4 left-4 right-4">
+        <select 
+          value={selectedLanguage}
+          onChange={(e) => setSelectedLanguage(e.target.value)}
+          className="w-full p-2 border rounded-lg text-sm"
+        >
+          <option value="hindi">हिंदी</option>
+          <option value="english">English</option>
+          <option value="marathi">मराठी</option>
+          <option value="gujarati">ગુજરાતી</option>
+          <option value="punjabi">ਪੰਜਾਬੀ</option>
+        </select>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      <Sidebar />
+      
+      <div className="flex-1 lg:ml-0">
+        <header className="bg-white shadow-sm border-b px-4 py-4 lg:px-6">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            <h2 className="text-xl font-semibold text-gray-800">
+              {activeTab === 'dashboard' && 'Dashboard'}
+              {activeTab === 'chat' && 'AI Advisor'}
+              {activeTab === 'crop' && 'Crop Guide'}
+              {activeTab === 'market' && 'Market Prices'}
+              {activeTab === 'weather' && 'Weather'}
+            </h2>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <User className="h-5 w-5 text-gray-500" />
+                <span className="text-sm text-gray-600">Farmer</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="p-4 lg:p-6">
+          {activeTab === 'dashboard' && renderDashboard()}
+          {activeTab === 'chat' && renderChat()}
+          {activeTab === 'crop' && renderCropAdvisory()}
+          {activeTab === 'market' && renderMarketPrices()}
+          {activeTab === 'weather' && (
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h3 className="text-xl font-semibold mb-4 text-gray-800">Detailed Weather Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="text-center p-4 border rounded-lg">
+                  <ThermometerSun className="h-12 w-12 mx-auto mb-2 text-orange-500" />
+                  <h4 className="font-semibold">Temperature</h4>
+                  <p className="text-2xl font-bold">{weatherData.temperature}°C</p>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <Droplets className="h-12 w-12 mx-auto mb-2 text-blue-500" />
+                  <h4 className="font-semibold">Humidity</h4>
+                  <p className="text-2xl font-bold">{weatherData.humidity}%</p>
+                </div>
+                <div className="text-center p-4 border rounded-lg">
+                  <Cloud className="h-12 w-12 mx-auto mb-2 text-gray-500" />
+                  <h4 className="font-semibold">Rainfall</h4>
+                  <p className="text-2xl font-bold">{weatherData.rainfall}mm</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+export default KrishiMitra;
